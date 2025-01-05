@@ -12,11 +12,8 @@ class TextChunker:
         text_length = len(text)
 
         while start < text_length:
-            end = start + self.chunk_size
-            if end > text_length:
-                end = text_length
-            chunk = text[start:end]
-            chunks.append(chunk)
+            end = min(start + self.chunk_size, text_length)
+            chunks.append(text[start:end])
             start += self.chunk_size - self.overlap
 
         return chunks

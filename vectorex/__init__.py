@@ -1,5 +1,6 @@
 from .core.embedder import Embedder
 from .processors.pdf import PDFProcessor
+from tqdm import tqdm
 
 
 class VectorEx:
@@ -12,11 +13,11 @@ class VectorEx:
         chunks = self.processor.process(file_path)
         filename = file_path.split("/")[-1]
 
-        for i, chunk in enumerate(chunks):
+        for i, chunk in enumerate(tqdm(chunks, desc="Processing PDF chunks")):
             self.embedder.add_texts(
-                [chunk],
-                [{"source": filename}],
-                [f"{filename}_{i}"],
+            [chunk],
+            [{"source": filename}],
+            [f"{filename}_{i}"],
             )
 
     def search(self, query: str, n_results: int = 3):

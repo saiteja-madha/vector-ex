@@ -10,8 +10,7 @@ vex.process_pdf("/path/to/pdf")
 results = vex.search("Example query", n_results=3)
 
 # Print results
-for i, (doc, metadata) in enumerate(
-    zip(results["documents"][0], results["metadatas"][0])
-):
-    print(f"\nResult {i+1} from {metadata['source']}:")
-    print(doc[:200] + "...")
+for doc, score in results:
+    source = doc.metadata.get("id", "Unknown")
+    context = doc.page_content
+    print(f"Source: {source}\nScore: {score}\nContext:\n{context}\n\n---\n")

@@ -1,33 +1,45 @@
-from chromadb.utils import embedding_functions
-import chromadb
+import os
+import shutil
+from langchain_core.documents import Document
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+
+CHROMA_PATH = "./chroma_db"
 
 
 class Embedder:
-    def __init__(self, model_name: str = None):
-        if model_name is None:
-            self.embedding_function = embedding_functions.DefaultEmbeddingFunction()
-        else:
-            self.embedding_function = (
-                embedding_functions.SentenceTransformerEmbeddingFunction(
-                    model_name=model_name, trust_remote_code=True
-                )
-            )
-        self.client = chromadb.PersistentClient(path="./chroma_db")
-        self.collection = self.get_collection()
-
-    def get_collection(self, name: str = "documents"):
-        try:
-            self.client.delete_collection(name)
-        except:
-            pass
-        return self.client.create_collection(
-            name=name, embedding_function=self.embedding_function
+    def __init__(self, model_name: str):
+        self.embedding_function = HuggingFaceEmbeddings(model_name=model_name)
+        self.db = Chroma(
+            collection_name="documents",
+            persist_directory=CHROMA_PATH,
+            embedding_function=self.embedding_function,
         )
 
-    def add_texts(self, texts: list, metadata: list, ids: list):
-        self.collection.add(documents=texts, metadatas=metadata, ids=ids)
+    def clear_database():
+        if os.path.exists(CHROMA_PATH):
+            shutil.rmtree(CHROMA_PATH)
+
+    def add_documents(self, chunks: list[Document]):
+        # Get existing document IDs.
+        existing_items = self.db.get(include=[])
+        existing_ids = set(existing_items["ids"])
+        print(f"Number of existing documents in DB: {len(existing_ids)}")
+
+        # Only add documents that don't exist in the DB.
+        new_chunks: list[Document] = []
+        for chunk in chunks:
+            if chunk.metadata["id"] not in existing_ids:
+                new_chunks.append(chunk)
+
+        if len(new_chunks) == 0:
+            print("No new documents to add.")
+            return
+
+        print(f"Adding {len(new_chunks)} new documents to the DB.")
+        new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
+        self.db.add_documents(documents=new_chunks, ids=new_chunk_ids)
 
     def search(self, query: str, n_results: int = 3):
-        return self.collection.query(
-            query_texts=[f"search_document: {query}"], n_results=n_results
-        )
+        results = self.db.similarity_search(query=query, k=n_results)
+        return results

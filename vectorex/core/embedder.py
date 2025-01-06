@@ -40,6 +40,6 @@ class Embedder:
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
         self.db.add_documents(documents=new_chunks, ids=new_chunk_ids)
 
-    def search(self, query: str, n_results: int = 3):
-        results = self.db.similarity_search(query=query, k=n_results)
+    def search(self, query: str, n_results: int = 3) -> list[tuple[Document, float]]:
+        results = self.db.similarity_search_with_score(query=query, k=n_results)
         return results

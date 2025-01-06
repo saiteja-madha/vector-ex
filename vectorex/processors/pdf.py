@@ -16,10 +16,15 @@ class PDFProcessor:
         """
         if not file_path.endswith(".pdf"):
             raise ValueError("File must be a PDF")
+        
+        file_name = file_path.split("/")[-1]
+        print(f"📄 Processing PDF: {file_name} 🚀")
 
         loader = PyMuPDFLoader(file_path=file_path)
         documents = loader.load()
+        print("Number of pages:", len(documents))
 
         chunks = self.chunker.split_documents(documents)
-        chunks_with_ids = self.chunker.calculate_chunk_ids(chunks)
-        return chunks_with_ids
+        print(f"Number of chunks: {len(chunks)}")
+
+        return chunks

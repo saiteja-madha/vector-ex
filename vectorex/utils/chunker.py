@@ -9,19 +9,7 @@ class DocumentChunker:
         self.chunk_size = chunk_size
         self.overlap = overlap
 
-    def split_documents(self, documents: list[Document]) -> list[Document]:
-        """
-        Split documents into overlapping chunks.
-        """
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=self.chunk_size,
-            chunk_overlap=self.overlap,
-            length_function=len,
-            is_separator_regex=False,
-        )
-        return text_splitter.split_documents(documents)
-
-    def calculate_chunk_ids(self, chunks: list[Document]) -> list[Document]:
+    def __calculate_chunk_ids(self, chunks: list[Document]) -> list[Document]:
         """
         Calculate unique IDs for each chunk and add them to the metadata.
         """
@@ -44,3 +32,16 @@ class DocumentChunker:
             chunk.metadata["id"] = chunk_id
 
         return chunks
+
+    def split_documents(self, documents: list[Document]) -> list[Document]:
+        """
+        Split documents into overlapping chunks.
+        """
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.chunk_size,
+            chunk_overlap=self.overlap,
+            length_function=len,
+            is_separator_regex=False,
+        )
+        chunks = text_splitter.split_documents(documents)
+        return self.__calculate_chunk_ids(chunks)

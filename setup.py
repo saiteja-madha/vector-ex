@@ -6,7 +6,7 @@ setup(
     description="A vector-based document search and processing system",
     author="Sai Teja Madha",
     author_email="contact@saitejamadha.dev",
-    packages=find_packages(include=["vectorex", "vectorex.*"]),
+    packages=find_packages(),
     install_requires=[
         "langchain-chroma>=0.1.4",
         "langchain-community>=0.3.14",

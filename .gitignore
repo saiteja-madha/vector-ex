@@ -10,3 +10,4 @@ __pycache__/
 
 # Project specific
 chroma_db/
+data/

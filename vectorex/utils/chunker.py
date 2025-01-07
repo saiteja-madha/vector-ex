@@ -1,19 +1,47 @@
-class TextChunker:
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+
+class DocumentChunker:
     def __init__(self, chunk_size: int = 1000, overlap: int = 100):
         if overlap >= chunk_size:
             raise ValueError("Overlap must be less than chunk size")
         self.chunk_size = chunk_size
         self.overlap = overlap
 
-    def chunk(self, text: str) -> list:
-        """Split text into overlapping chunks."""
-        chunks = []
-        start = 0
-        text_length = len(text)
+    def __calculate_chunk_ids(self, chunks: list[Document]) -> list[Document]:
+        """
+        Calculate unique IDs for each chunk and add them to the metadata.
+        """
+        last_page_id = None
+        current_chunk_index = 0
 
-        while start < text_length:
-            end = min(start + self.chunk_size, text_length)
-            chunks.append(text[start:end])
-            start += self.chunk_size - self.overlap
+        for chunk in chunks:
+            source = chunk.metadata.get("source")
+            page = chunk.metadata.get("page")
+            current_page_id = f"{source}:{page}"
+
+            if current_page_id == last_page_id:
+                current_chunk_index += 1
+            else:
+                current_chunk_index = 0
+
+            chunk_id = f"{current_page_id}:{current_chunk_index}"
+            last_page_id = current_page_id
+
+            chunk.metadata["id"] = chunk_id
 
         return chunks
+
+    def split_documents(self, documents: list[Document]) -> list[Document]:
+        """
+        Split documents into overlapping chunks.
+        """
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.chunk_size,
+            chunk_overlap=self.overlap,
+            length_function=len,
+            is_separator_regex=False,
+        )
+        chunks = text_splitter.split_documents(documents)
+        return self.__calculate_chunk_ids(chunks)

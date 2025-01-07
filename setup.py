@@ -8,11 +8,12 @@ setup(
     author_email="contact@saitejamadha.dev",
     packages=find_packages(include=["vectorex", "vectorex.*"]),
     install_requires=[
-        "chromadb>=0.6.0",
-        "einops>=0.8.0",
-        "PyPDF2>=3.0.0",
+        "langchain-chroma>=0.1.4",
+        "langchain-community>=0.3.14",
+        "langchain-core>=0.3.29" "langchain-huggingface>=0.1.2",
+        "langchain-text-splitters>=0.3.4",
+        "PyMuPDF>=1.25.0",
         "sentence-transformers>=3.3.0",
-        "tqdm>=4.67.0",
     ],
     python_requires=">=3.12",
     classifiers=[
